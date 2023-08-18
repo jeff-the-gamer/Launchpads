@@ -1,0 +1,10 @@
+name: ReinLaunchPads
+main: dev.planeparty.Launchpads.Main
+version: 1.0.0
+api-version: 1.19
+commands:
+  launchpad:
+    description: Toggles Launchpad Placement Mode
+    usage: /<command> [on | off | toggle]
+    permission: launchpads.place
+    aliases: launchpads
