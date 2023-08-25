@@ -73,6 +73,7 @@ public class EventListener implements Listener {
     			Main.launchpads.add(pad);
     			Main.saveLaunchpads();
     			e.getPlayer().getInventory().setItemInMainHand((ItemStack) Main.launchinfo.get(e.getPlayer()).get("item"));
+    			Main.launchinfo.remove(e.getPlayer());
     		}
     	} else if (e.getAction() == Action.PHYSICAL && blocks.contains(e.getClickedBlock().getType())) {
     		for (Launchpad pad : Main.launchpads) {
