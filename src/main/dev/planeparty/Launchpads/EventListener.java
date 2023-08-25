@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.enchantments.Enchantment;
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -77,13 +79,16 @@ public class EventListener implements Listener {
     		}
     	} else if (e.getAction() == Action.PHYSICAL && blocks.contains(e.getClickedBlock().getType())) {
     		for (Launchpad pad : Main.launchpads) {
-    			if (pad.location == e.getClickedBlock().getLocation()) {
-    				e.getPlayer().getVelocity().add(pad.direction).setY(pad.vertical);
+    			if (pad.location.equals(e.getClickedBlock().getLocation())) {
+    				Vector v = e.getPlayer().getVelocity().add(pad.direction).setY(pad.vertical);
+    				e.getPlayer().setVelocity(v);
     				fallimmunity.add(e.getPlayer());
     				e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_PISTON_EXTEND, 1f, 1f);
     				Bukkit.getScheduler().runTaskLater(Main.getInstance(), new Runnable() {
     					public void run() {
-    						fallimmunity.remove(e.getPlayer());
+    						if (fallimmunity.contains(e.getPlayer())) {
+    							fallimmunity.remove(e.getPlayer());
+    						}
     					}
     				}, 100L);
     			}
@@ -146,9 +151,11 @@ public class EventListener implements Listener {
     			e.getPlayer().sendMessage(ChatColor.GOLD + "Look in the direction you want the launchpad to launch, then click with the selector item");
     			Bukkit.getScheduler().runTaskLater(Main.getInstance(), new Runnable() {
     				public void run() {
-    					e.getPlayer().getInventory().setItemInMainHand((ItemStack) Main.launchinfo.get(e.getPlayer()).get("item"));
-    					pad.location.getBlock().setType(Material.AIR);
-    					e.getPlayer().sendMessage(ChatColor.RED + "Launch Pad creation cancelled");
+    					if (Main.launchinfo.containsKey(e.getPlayer())) {
+	    					e.getPlayer().getInventory().setItemInMainHand((ItemStack) Main.launchinfo.get(e.getPlayer()).get("item"));
+	    					pad.location.getBlock().setType(Material.AIR);
+	    					e.getPlayer().sendMessage(ChatColor.RED + "Launch Pad creation cancelled");
+	    				}
     				}
     			}, 600L);
     		});
@@ -159,6 +166,30 @@ public class EventListener implements Listener {
     public void onSwitch(PlayerItemHeldEvent e) {
     	if (Main.launchinfo.containsKey(e.getPlayer())) {
     		e.getPlayer().getInventory().setHeldItemSlot(e.getPreviousSlot());
+    	}
+    }
+    
+    @EventHandler
+    public void onBreak(BlockBreakEvent e) {
+    	if (blocks.contains(e.getBlock().getType())) {
+    		for (Launchpad pad : Main.launchpads) {
+        		if (pad.location.equals(e.getBlock().getLocation())) {
+        			e.getPlayer().sendMessage(ChatColor.GOLD + "Removed Launchpad");
+        			Main.launchpads.remove(pad);
+        			Main.saveLaunchpads();
+        		}
+        	}
+    	} else { 
+    		Location l = new Location(e.getBlock().getWorld(), e.getBlock().getX(), e.getBlock().getLocation().getY() + 1, e.getBlock().getZ());
+    		if (blocks.contains(e.getBlock().getWorld().getBlockAt(l).getType())) {
+    			for (Launchpad pad : Main.launchpads) {
+            		if (pad.location.equals(e.getBlock().getLocation())) {
+            			e.getPlayer().sendMessage(ChatColor.GOLD + "Removed Launchpad");
+            			Main.launchpads.remove(pad);
+            			Main.saveLaunchpads();
+            		}
+            	}
+    		}
     	}
     }
     
