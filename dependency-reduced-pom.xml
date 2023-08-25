@@ -5,10 +5,10 @@
   <artifactId>Launchpads</artifactId>
   <version>1.0.0</version>
   <build>
-    <sourceDirectory>${project.basedir}/src</sourceDirectory>
+    <sourceDirectory>${project.basedir}/src/main</sourceDirectory>
     <resources>
       <resource>
-        <directory>${project.basedir}/resources</directory>
+        <directory>${project.basedir}/src/main/resources</directory>
         <includes>
           <include>plugin.yml</include>
         </includes>
@@ -52,8 +52,8 @@
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
     <repository>
-      <id>jitpack.io</id>
-      <url>https://jitpack.io</url>
+      <id>codemc-snapshots</id>
+      <url>https://repo.codemc.io/repository/maven-snapshots/</url>
     </repository>
   </repositories>
   <dependencies>
