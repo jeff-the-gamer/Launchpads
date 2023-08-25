@@ -18,6 +18,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -45,11 +46,6 @@ public class EventListener implements Listener {
 		}
 		fallimmunity = new ArrayList<>();
 	}
-	
-    @EventHandler
-    public void onInteract(PlayerInteractEvent e) {
-    	
-    }
     
     @EventHandler
     public void onFall(EntityDamageEvent e) {
@@ -68,7 +64,7 @@ public class EventListener implements Listener {
 			meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
 			meta.setDisplayName(ChatColor.GOLD + "Launch Direction Selector");
 			i.setItemMeta(meta);
-    		if ((e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem() == i) {
+    		if ((e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK || e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) && e.getItem().equals(i)) {
     			Launchpad pad = (Launchpad) Main.launchinfo.get(e.getPlayer()).get("launchpad");
     			Vector v = e.getPlayer().getFacing().getDirection();
     			v.multiply(pad.strength);
@@ -157,4 +153,12 @@ public class EventListener implements Listener {
     		});
     	}
     }
+    
+    @EventHandler
+    public void onSwitch(PlayerItemHeldEvent e) {
+    	if (Main.launchinfo.containsKey(e.getPlayer())) {
+    		e.getPlayer().getInventory().setHeldItemSlot(e.getPreviousSlot());
+    	}
+    }
+    
 }
