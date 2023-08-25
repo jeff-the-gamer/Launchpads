@@ -28,7 +28,6 @@ import net.md_5.bungee.api.ChatColor;
 
 import net.wesjd.anvilgui.AnvilGUI;
 import net.wesjd.anvilgui.AnvilGUI.Builder;
-import net.wesjd.anvilgui.AnvilGUI.Slot;
 
 
 public class EventListener implements Listener {
@@ -104,8 +103,8 @@ public class EventListener implements Listener {
     		Builder power = new AnvilGUI.Builder();
         	vertical.interactableSlots();
         	power.interactableSlots();
-        	vertical.title("Enter Vertical Launch Here");
-        	power.title("Enther Launch Power Here");
+        	vertical.title("Enter Vertical Launch");
+        	power.title("Ether Launch Power");
         	vertical.itemOutput(new ItemStack(Material.PAPER));
         	power.itemOutput(new ItemStack(Material.PAPER));
         	vertical.itemLeft(new ItemStack(Material.PAPER));
@@ -131,7 +130,11 @@ public class EventListener implements Listener {
         			return Collections.emptyList();
         		}
         		pad.strength = Double.parseDouble(stateSnapshot.getText());
-        		HashMap<String, Object> minimap = Main.launchinfo.get(e.getPlayer());
+        		return Arrays.asList(AnvilGUI.ResponseAction.close());
+        	});
+        	vertical.open(e.getPlayer());
+    		power.onClose(stateSnapshot -> {
+    			HashMap<String, Object> minimap = Main.launchinfo.get(e.getPlayer());
     			minimap.put("stage", "direction");
     			minimap.put("item", e.getPlayer().getInventory().getItemInMainHand());
     			ItemStack i = new ItemStack(Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
@@ -145,15 +148,11 @@ public class EventListener implements Listener {
     			Bukkit.getScheduler().runTaskLater(Main.getInstance(), new Runnable() {
     				public void run() {
     					e.getPlayer().getInventory().setItemInMainHand((ItemStack) Main.launchinfo.get(e.getPlayer()).get("item"));
-    					Launchpad pad = (Launchpad) Main.launchinfo.get(e.getPlayer()).get("launchpad");
     					pad.location.getBlock().setType(Material.AIR);
     					e.getPlayer().sendMessage(ChatColor.RED + "Launch Pad creation cancelled");
     				}
     			}, 600L);
-        		return Arrays.asList(AnvilGUI.ResponseAction.close());
-        	});
-        	vertical.open(e.getPlayer());
-    		
+    		});
     	}
     }
 }
