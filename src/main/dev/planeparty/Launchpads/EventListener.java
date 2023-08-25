@@ -104,7 +104,7 @@ public class EventListener implements Listener {
         	vertical.interactableSlots();
         	power.interactableSlots();
         	vertical.title("Enter Vertical Launch");
-        	power.title("Ether Launch Power");
+        	power.title("Enter Launch Power");
         	vertical.itemOutput(new ItemStack(Material.PAPER));
         	power.itemOutput(new ItemStack(Material.PAPER));
         	vertical.itemLeft(new ItemStack(Material.PAPER));
@@ -134,9 +134,11 @@ public class EventListener implements Listener {
         	});
         	vertical.open(e.getPlayer());
     		power.onClose(stateSnapshot -> {
-    			HashMap<String, Object> minimap = Main.launchinfo.get(e.getPlayer());
+    			HashMap<String, Object> minimap = new HashMap<>();
     			minimap.put("stage", "direction");
     			minimap.put("item", e.getPlayer().getInventory().getItemInMainHand());
+    			minimap.put("launchpad", pad);
+    			Main.launchinfo.put(e.getPlayer(), minimap);
     			ItemStack i = new ItemStack(Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
     			ItemMeta meta = i.getItemMeta();
     			meta.addEnchant(Enchantment.PROTECTION_ENVIRONMENTAL, 1, true);
