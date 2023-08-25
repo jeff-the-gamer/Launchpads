@@ -28,6 +28,7 @@ import net.md_5.bungee.api.ChatColor;
 
 import net.wesjd.anvilgui.AnvilGUI;
 import net.wesjd.anvilgui.AnvilGUI.Builder;
+import net.wesjd.anvilgui.AnvilGUI.Slot;
 
 
 public class EventListener implements Listener {
@@ -107,6 +108,8 @@ public class EventListener implements Listener {
         	power.title("Enther Launch Power Here");
         	vertical.itemOutput(new ItemStack(Material.PAPER));
         	power.itemOutput(new ItemStack(Material.PAPER));
+        	vertical.itemLeft(new ItemStack(Material.PAPER));
+        	power.itemLeft(new ItemStack(Material.PAPER));
         	vertical.plugin((Plugin) Main.getInstance());
         	power.plugin((Plugin) Main.getInstance());
         	vertical.onClick((slot, stateSnapshot) -> {
