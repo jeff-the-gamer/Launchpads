@@ -14,6 +14,10 @@
         <id>spigot-repo</id>
         <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
   </repositories>
   <dependencies>
 	  <dependency>
@@ -22,6 +26,11 @@
            <version>1.20.1-R0.1-SNAPSHOT</version>
            <scope>provided</scope>
     </dependency>
+     <dependency>
+    <groupId>net.wesjd</groupId>
+    <artifactId>anvilgui</artifactId>
+    <version>1.6.5-SNAPSHOT</version>
+</dependency>
   </dependencies>
   <build>
     <sourceDirectory>${project.basedir}/src</sourceDirectory>
@@ -33,5 +42,36 @@
         </includes>
       </resource>
     </resources>
+     <plugins>
+      <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+            <relocations>
+                <relocation>
+                  <pattern>net.wesjd.anvilgui</pattern>
+                  <shadedPattern>dev.planeparty.Launchpads.anvilgui</shadedPattern>
+                  </relocation>
+            </relocations>
+             <filters>
+                     <filter>
+                                <artifact>*:*</artifact>
+                                <excludeDefaults>false</excludeDefaults>
+                                <includes>
+                                    <include>dev.planeparty.Launchpads.anvilgui</include>
+                                </includes>
+                            </filter>
+                            </filters>
+        </configuration>
+        <executions>
+            <execution>
+                <phase>package</phase>
+                <goals>
+                    <goal>shade</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+    </plugins>
   </build>
 </project>

@@ -1,32 +1,33 @@
 package dev.planeparty.Launchpads;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
-import org.bukkit.block.Sign;
-import org.bukkit.block.sign.Side;
-import org.bukkit.block.sign.SignSide;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.util.Vector;
 
 import net.md_5.bungee.api.ChatColor;
+
+import net.wesjd.anvilgui.AnvilGUI;
+import net.wesjd.anvilgui.AnvilGUI.Builder;
 
 
 public class EventListener implements Listener {
@@ -47,20 +48,7 @@ public class EventListener implements Listener {
 	
     @EventHandler
     public void onInteract(PlayerInteractEvent e) {
-    	if (e.getAction() == Action.PHYSICAL && blocks.contains(e.getClickedBlock().getType())) {
-    		for (Launchpad pad : Main.launchpads) {
-    			if (pad.location == e.getClickedBlock().getLocation()) {
-    				e.getPlayer().getVelocity().add(pad.direction).setY(pad.vertical);
-    				fallimmunity.add(e.getPlayer());
-    				e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_PISTON_EXTEND, 1f, 1f);
-    				Bukkit.getScheduler().runTaskLater(Main.getInstance(), new Runnable() {
-    					public void run() {
-    						fallimmunity.remove(e.getPlayer());
-    					}
-    				}, 100L);
-    			}
-    		}
-    	}
+    	
     }
     
     @EventHandler
@@ -90,31 +78,57 @@ public class EventListener implements Listener {
     			Main.saveLaunchpads();
     			e.getPlayer().getInventory().setItemInMainHand((ItemStack) Main.launchinfo.get(e.getPlayer()).get("item"));
     		}
+    	} else if (e.getAction() == Action.PHYSICAL && blocks.contains(e.getClickedBlock().getType())) {
+    		for (Launchpad pad : Main.launchpads) {
+    			if (pad.location == e.getClickedBlock().getLocation()) {
+    				e.getPlayer().getVelocity().add(pad.direction).setY(pad.vertical);
+    				fallimmunity.add(e.getPlayer());
+    				e.getPlayer().playSound(e.getPlayer().getLocation(), Sound.BLOCK_PISTON_EXTEND, 1f, 1f);
+    				Bukkit.getScheduler().runTaskLater(Main.getInstance(), new Runnable() {
+    					public void run() {
+    						fallimmunity.remove(e.getPlayer());
+    					}
+    				}, 100L);
+    			}
+    		}
     	}
     }
     
     @EventHandler
-    public void onSignClose(SignChangeEvent e) {
+    public void onPlace(BlockPlaceEvent e) {
     	if (e.isCancelled()) { return; }
-    	if (Main.launchinfo.containsKey(e.getPlayer())) {
-    		if (Main.launchinfo.get(e.getPlayer()).get("state").toString().equalsIgnoreCase("vertical")) {
-    			((Launchpad) Main.launchinfo.get(e.getPlayer()).get("launchpad")).vertical = Double.parseDouble(e.getLine(0));
-    			Block sb = e.getBlock().getLocation().getBlock();
-        		sb.setType(Material.OAK_SIGN);
-        		Sign sign = (Sign) sb;
-        		sb.setType(((Launchpad) Main.launchinfo.get(e.getPlayer()).get("launchpad")).material);
-        		SignSide signside = sign.getSide(Side.FRONT);
-        		signside.setLine(0, "");
-        		signside.setLine(1, "--------------");
-        		signside.setLine(2, "Please enter");
-        		signside.setLine(3, "Launch Strength");
-        		e.getPlayer().openSign(sign);
+    	if (blocks.contains(e.getBlock().getType()) && Main.padplace.contains(e.getPlayer())) {
+    		Launchpad pad = new Launchpad(e);
+    		Builder vertical = new AnvilGUI.Builder();
+    		Builder power = new AnvilGUI.Builder();
+        	vertical.interactableSlots();
+        	power.interactableSlots();
+        	vertical.title("Enter Vertical Launch Here");
+        	power.title("Enther Launch Power Here");
+        	vertical.itemOutput(new ItemStack(Material.PAPER));
+        	power.itemOutput(new ItemStack(Material.PAPER));
+        	vertical.plugin((Plugin) Main.getInstance());
+        	power.plugin((Plugin) Main.getInstance());
+        	vertical.onClick((slot, stateSnapshot) -> {
+        		if (slot != AnvilGUI.Slot.OUTPUT) {
+        			return Collections.emptyList();
+        		}
+        		if (!(Double.parseDouble(stateSnapshot.getText()) > 0)) {
+        			return Collections.emptyList();
+        		}
+        		pad.vertical = Double.parseDouble(stateSnapshot.getText());
+        		power.open(e.getPlayer());
+        		return Arrays.asList(AnvilGUI.ResponseAction.close());
+        	});
+        	power.onClick((slot, stateSnapshot) -> {
+        		if (slot != AnvilGUI.Slot.OUTPUT) {
+        			return Collections.emptyList();
+        		}
+        		if (!(Double.parseDouble(stateSnapshot.getText()) > 0)) {
+        			return Collections.emptyList();
+        		}
+        		pad.strength = Double.parseDouble(stateSnapshot.getText());
         		HashMap<String, Object> minimap = Main.launchinfo.get(e.getPlayer());
-        		minimap.put("stage", "velocity");
-        		Main.launchinfo.put(e.getPlayer(), minimap);
-    		} else if (Main.launchinfo.get(e.getPlayer()).get("state").toString().equalsIgnoreCase("velocity")) {
-    			((Launchpad) Main.launchinfo.get(e.getPlayer()).get("launchpad")).strength = Double.parseDouble(e.getLine(0));
-    			HashMap<String, Object> minimap = Main.launchinfo.get(e.getPlayer());
     			minimap.put("stage", "direction");
     			minimap.put("item", e.getPlayer().getInventory().getItemInMainHand());
     			ItemStack i = new ItemStack(Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
@@ -133,29 +147,10 @@ public class EventListener implements Listener {
     					e.getPlayer().sendMessage(ChatColor.RED + "Launch Pad creation cancelled");
     				}
     			}, 600L);
-    		}
-    	}
-    }
-    
-    @EventHandler
-    public void onPlace(BlockPlaceEvent e) {
-    	if (e.isCancelled()) { return; }
-    	if (blocks.contains(e.getBlock().getType()) && Main.padplace.contains(e.getPlayer())) {
-    		Launchpad pad = new Launchpad(e);
-    		Block sb = e.getBlock().getLocation().getBlock();
-    		sb.setType(Material.OAK_SIGN);
-    		Sign sign = (Sign) sb;
-    		SignSide signside = sign.getSide(Side.FRONT);
-    		sb.setType(pad.material);
-    		signside.setLine(0, "");
-    		signside.setLine(1, "--------------");
-    		signside.setLine(2, "Please enter");
-    		signside.setLine(3, "Vertical Launch");
-    		e.getPlayer().openSign(sign);
-    		HashMap<String, Object> minimap = new HashMap<>();
-    		minimap.put("stage", "vertical");
-    		minimap.put("launchpad", pad);
-    		Main.launchinfo.put(e.getPlayer(), minimap);
+        		return Arrays.asList(AnvilGUI.ResponseAction.close());
+        	});
+        	vertical.open(e.getPlayer());
+    		
     	}
     }
 }
