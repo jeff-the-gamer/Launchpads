@@ -1,4 +1,4 @@
-name: ReinLaunchPads
+name: LaunchPads
 main: dev.planeparty.Launchpads.Main
 version: 1.0.0
 api-version: 1.20
